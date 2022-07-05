@@ -133,8 +133,6 @@
     <EmbeddedResource Include="MaterialSearchDialog.resx">
       <DependentUpon>MaterialSearchDialog.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="ToolbarLarge.bmp" />
-    <EmbeddedResource Include="ToolbarSmall.bmp" />
     <EmbeddedResource Include="MainIconLarge.bmp" />
     <EmbeddedResource Include="MainIconSmall.bmp" />
   </ItemGroup>
