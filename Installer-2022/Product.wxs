@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+	<Product Id="*" Name="Material Search Addin" Language="1033" Version="!(bind.FileVersion.fil88E576221E7CDD00B39C845F3552FE22)" Manufacturer="Jim Sculley" UpgradeCode="02d537a8-892a-4ef5-a3a4-7535112c4178">
+		<Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
+
+		<MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
+		<MediaTemplate EmbedCab="yes"/>
+    <UIRef Id="WixUI_Advanced" />
+    <UIRef Id="WixUI_Common" />
+    <!-->Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" /-->
+    <Property Id="ApplicationFolderName" Value="Material Search Add-In" />
+    <Property Id="WixAppFolder" Value="WixPerMachineFolder" />
+    <WixVariable Id="WixUILicenseRtf" Value="Resources\eula.rtf" />
+    
+    <Feature Id="ProductFeature" Title="Material Search Addin" Level="1">
+			<ComponentGroupRef Id="ProductComponents" />
+      <ComponentGroupRef Id="FilesRegGroup" />
+    </Feature>
+    <Feature Id="SourceFeature" Title ="Source Code" Level = "2">
+      <ComponentGroupRef Id="SourceComponents" />
+    </Feature>
+    <SetDirectory Id="APPLICATIONFOLDER" Value="[ProgramFiles64Folder][ApplicationFolderName]">APPLICATIONFOLDER=""</SetDirectory>
+    <CustomAction
+          Id="OverwriteWixSetDefaultPerMachineFolder"
+          Property="WixPerMachineFolder"
+          Value="[APPLICATIONFOLDER]"
+          Execute="immediate"/>
+
+    <CustomAction
+        Id="SetARPINSTALLLOCATION"
+        Property="ARPINSTALLLOCATION"
+        Value="[APPLICATIONFOLDER]"/>
+    <InstallUISequence>
+      <Custom Action="OverwriteWixSetDefaultPerMachineFolder" After="WixSetDefaultPerMachineFolder" />
+    </InstallUISequence>
+
+    <InstallExecuteSequence>
+      <Custom Action="OverwriteWixSetDefaultPerMachineFolder" After="WixSetDefaultPerMachineFolder" />
+      <Custom Action="SetARPINSTALLLOCATION" After="InstallValidate"/>
+    </InstallExecuteSequence>
+  </Product>
+
+	<Fragment>
+		<Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="ProgramFiles64Folder">
+        <Directory Id="APPLICATIONFOLDER" Name="Material Search Add-in">
+          <Directory Id="SRCFOLDER" Name="src" />
+        </Directory>
+      </Directory>
+		</Directory>
+	</Fragment>
+
+	<Fragment>
+		<ComponentGroup Id="ProductComponents" Directory="APPLICATIONFOLDER">
+      <Component Id="Reg" Guid="{74FA0891-A26F-435E-B72A-672BC0E4406A}">
+        <RegistryValue Root="HKMU" Key="Software\SolidWorks\AddInsStartup\{7d9a0851-0c53-4a7b-91ab-6ff1992391b4}" Value="1" Type="integer" Action="write" />
+        <RegistryValue Root="HKLM" Key="Software\SolidWorks\Addins\{7d9a0851-0c53-4a7b-91ab-6ff1992391b4}" Value="0" Type="integer" Action="write" />
+        <RegistryValue Root="HKLM" Key="Software\SolidWorks\Addins\{7d9a0851-0c53-4a7b-91ab-6ff1992391b4}" Name="Description" Value="Replace Edit Material dialog with searchable version" Type="string" Action="write" />
+        <RegistryValue Root="HKLM" Key="Software\SolidWorks\Addins\{7d9a0851-0c53-4a7b-91ab-6ff1992391b4}" Name="Title" Value="Material Search Add-In" Type="string" Action="write" />
+      </Component>
+			<!-- TODO: Remove the comments around this Component element and the ComponentRef below in order to add resources to this installer. -->
+			<!-- <Component Id="ProductComponent"> -->
+				<!-- TODO: Insert files, registry keys, and other resources here. -->
+			<!-- </Component> -->
+		</ComponentGroup>
+    <ComponentGroup Id="SourceComponents" Directory="SRCFOLDER">
+      <Component Id="SourceCode" Guid="*">
+        <File Id="SourceZIP" KeyPath="yes" Source="$(var.SourceOutDir)\src.zip" />
+      </Component>
+    </ComponentGroup>
+	</Fragment>
+</Wix>
