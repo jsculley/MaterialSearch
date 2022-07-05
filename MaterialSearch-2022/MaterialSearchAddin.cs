@@ -21,11 +21,11 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-using SldWorks;
+using SolidWorks.Interop.sldworks;
 using SolidWorksTools;
-using SwCommands;
-using SwConst;
-using SWPublished;
+using SolidWorks.Interop.swcommands;
+using SolidWorks.Interop.swconst;
+using SolidWorks.Interop.swpublished;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -33,6 +33,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using System.Xml.Linq;
+
 namespace org.duckdns.buttercup.MaterialSearch
 {
     /// <summary>
@@ -53,7 +54,7 @@ namespace org.duckdns.buttercup.MaterialSearch
         #endregion
 
         #region Event Handler Variables
-        SldWorks.SldWorks SwEventPtr = null;
+        SldWorks SwEventPtr = null;
         #endregion
 
         #region Boilerplate SolidWorks Registration Code
@@ -147,7 +148,7 @@ namespace org.duckdns.buttercup.MaterialSearch
 
            
             #region Setup the Event Handlers
-            SwEventPtr = (SldWorks.SldWorks)swApp;
+            SwEventPtr = (SldWorks)swApp;
             AttachEventHandlers();
             #endregion
 
