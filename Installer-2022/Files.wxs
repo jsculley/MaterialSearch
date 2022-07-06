@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+    <Fragment>
+        <DirectoryRef Id="APPLICATIONFOLDER">
+            <Component Id="cmp45F6991591DBE356B93408A6AAC26B1D" Guid="*">
+                <File Id="fil88E576221E7CDD00B39C845F3552FE22" KeyPath="yes" Source="$(var.SourceOutDir)\MaterialSearch.dll" />
+            </Component>
+            <Component Id="cmp628EE0842895A3675E31719E51924686" Guid="*">
+                <File Id="fil9E0DC4A6729CCA041FC73CC6312835AB" KeyPath="yes" Source="$(var.SourceOutDir)\solidworkstools.dll" />
+            </Component>
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <ComponentGroup Id="FilesRegGroup">
+            <ComponentRef Id="cmp45F6991591DBE356B93408A6AAC26B1D" />
+            <ComponentRef Id="cmp628EE0842895A3675E31719E51924686" />
+        </ComponentGroup>
+    </Fragment>
+</Wix>
