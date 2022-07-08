@@ -17,9 +17,11 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
     <OutputPath>bin\$(Configuration)\</OutputPath>
     <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
-    <DefineConstants>Debug;SourceOutDir=..\MaterialSearchAddin-2022\bin\$(Configuration)</DefineConstants>
+    <DefineConstants>SourceOutDir=..\MaterialSearchAddin-2022\bin\$(Configuration)</DefineConstants>
+    <SuppressIces>ICE57</SuppressIces>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="AddInReg.wxs" />
     <Compile Include="Files.wxs" />
     <Compile Include="Product.wxs" />
   </ItemGroup>
@@ -56,4 +58,7 @@
   <Target Name="BeforeBuild">
     <HeatDirectory Directory="..\MaterialSearchAddin-2022\bin\$(Configuration)" RunAsSeparateProcess="true" Transforms="DirectoryHeatTransform.xslt" PreprocessorVariable="var.SourceOutDir" OutputFile="Files.wxs" ComponentGroupName="FilesRegGroup" DirectoryRefId="APPLICATIONFOLDER" AutogenerateGuids="true" ToolPath="$(WixToolPath)" SuppressFragments="true" SuppressRegistry="true" SuppressCom="true" SuppressRootDirectory="true" />
   </Target>
+  <!-->Target Name="BeforeBuild">
+    <HeatFile File="..\MaterialSearchAddin-2022\bin\$(Configuration)\MaterialSearch.dll" RunAsSeparateProcess="true" PreprocessorVariable="var.SourceOutDir" OutputFile="AddInReg.wxs" ComponentGroupName="AddInComRegGroup" DirectoryRefId="APPLICATIONFOLDER" AutogenerateGuids="true" ToolPath="$(WixToolPath)" SuppressFragments="false" SuppressRegistry="false" SuppressCom="false" SuppressRootDirectory="true" />
+  </Target-->
 </Project>

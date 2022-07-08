@@ -33,6 +33,11 @@
       name="ZipToRemove"
       match="wix:Component[ substring( wix:File/@Source, string-length( wix:File/@Source ) - 3 ) = '.zip' ]"
       use="@Id" />
+  
+  <xsl:key
+      name="DllToRemove"
+      match="wix:Component[ substring( wix:File/@Source, string-length( wix:File/@Source ) - 3 ) = '.dll' ]"
+      use="@Id" />
 
   <xsl:template match="@*|node()">
     <xsl:copy>
@@ -45,4 +50,5 @@
   <xsl:template match="*[ self::wix:Component or self::wix:ComponentRef ][ key( 'PdbToRemove', @Id ) ]" />
   <xsl:template match="*[ self::wix:Component or self::wix:ComponentRef ][ key( 'ConfigToRemove', @Id ) ]" />
   <xsl:template match="*[ self::wix:Component or self::wix:ComponentRef ][ key( 'ZipToRemove', @Id ) ]" />
+<xsl:template match="*[ self::wix:Component or self::wix:ComponentRef ][ key( 'DllToRemove', @Id ) ]" />
 </xsl:stylesheet>
