@@ -69,6 +69,7 @@ namespace org.duckdns.buttercup.MaterialSearch
             this.databaseNameList.DataSource = this.materialDatabases;
             this.databaseNameList.ClearSelected();
             this.Location = Properties.Settings.Default.Location;
+            this.Size = Properties.Settings.Default.Size;
             if (Properties.Settings.Default.DatabasesToSearch.Contains("All"))
             {
                 this.searchAllRadioButton.Checked = true;
@@ -77,7 +78,6 @@ namespace org.duckdns.buttercup.MaterialSearch
             {
                 this.searchSelectedRadioButton.Checked = true;
             }
-            //updateListBoxSelections();
         }
 
         
@@ -248,9 +248,10 @@ namespace org.duckdns.buttercup.MaterialSearch
         /// <param name="e">the event arguments</param>
         private void saveSettings(object sender, FormClosingEventArgs e)
         {
-            //Store form location
+            //Store form location/size info
             Form f = sender as MaterialSearchDialog;
             Properties.Settings.Default.Location = f.Location;
+            Properties.Settings.Default.Size = this.Size;
             //Store selected databases
             System.Collections.Specialized.StringCollection databaseNames = new System.Collections.Specialized.StringCollection();
             if (this.searchAllRadioButton.Checked)
