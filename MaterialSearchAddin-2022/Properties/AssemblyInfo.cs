@@ -50,4 +50,4 @@ using System.Reflection;
 
 //[assembly: AssemblyVersion("1.0.*")]
 
-[assembly: AssemblyVersion("0.2.22188.0")]
+[assembly: AssemblyVersion("0.2.22202.8")]
