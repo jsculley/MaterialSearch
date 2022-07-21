@@ -30,21 +30,62 @@ namespace org.duckdns.buttercup.MaterialSearch
 {
     public partial class MaterialSearchDialog : Form
     {
+        /// <summary>
+        /// All databases that will be listed in this form
+        /// </summary>
         private List<MaterialDatabaseDescriptor> materialDatabases;
+
+        /// <summary>
+        /// Information abot the configurations that a material will be applied to
+        /// </summary>
         private ConfigInfo configInfo;
 
+        /// <summary>
+        /// The currently selected material
+        /// </summary>
+        public MaterialSearchResult SelectedMaterial { get; private set; }
+
+
+        /// <summary>
+        /// Construct a dialog from the given databases with a <see cref="ConfigInfo"/> object that
+        /// act to transfer configuration info back to the caller
+        /// </summary>
+        /// <param name="materialDatabases">the material databases that should appear in the dialog</param>
+        /// <param name="configInfo">the <see cref="ConfigInfo"/> object that will be populated for the caller</param>
         public MaterialSearchDialog(List<MaterialDatabaseDescriptor> materialDatabases, ConfigInfo configInfo)
         {
             this.materialDatabases = materialDatabases;
             this.configInfo = configInfo;
-            materialDatabases.Sort();
+            this.materialDatabases.Sort();
             InitializeComponent();
-            databaseNameList.DataSource = this.materialDatabases;
-            databaseNameList.ClearSelected();
+            applySavedSettings();
         }
-       
-        public MaterialSearchResult SelectedMaterial { get; private set; }
 
+        /// <summary>
+        /// Update the dialog controls based on values read from saved settings
+        /// </summary>
+        private void applySavedSettings()
+        {
+            this.databaseNameList.DataSource = this.materialDatabases;
+            this.databaseNameList.ClearSelected();
+            this.Location = Properties.Settings.Default.Location;
+            if (Properties.Settings.Default.DatabasesToSearch.Contains("All"))
+            {
+                this.searchAllRadioButton.Checked = true;
+            }
+            else
+            {
+                this.searchSelectedRadioButton.Checked = true;
+            }
+            //updateListBoxSelections();
+        }
+
+        
+        /// <summary>
+        /// Search the databases for the text in the seardh field
+        /// </summary>
+        /// <param name="sender">the event source</param>
+        /// <param name="e">the event arguments</param>
         private void performSearch(object sender, EventArgs e)
         {
             if (searchTermTextBox.Text == String.Empty)
@@ -94,12 +135,18 @@ namespace org.duckdns.buttercup.MaterialSearch
             resultsLabel.Text = "Results: " + matches.Count;
         }
 
+        /// <summary>
+        /// Adjust the state and content of the database list box based on user selections
+        /// </summary>
+        /// <param name="sender">the event source</param>
+        /// <param name="e">the event arguments</param>
         private void updateListBoxStatus(object sender, EventArgs e)
         {
             RadioButton rb = sender as RadioButton;
             if (rb.Checked)
             {
                 databaseNameList.Enabled = true;
+                updateListBoxSelections();
             } else
             {
                 databaseNameList.ClearSelected();
@@ -108,12 +155,47 @@ namespace org.duckdns.buttercup.MaterialSearch
                
         }
 
+        /// <summary>
+        /// Update the list box by reading the user's saved settings
+        /// </summary>
+        private void updateListBoxSelections()
+        {
+            System.Collections.Specialized.StringCollection selectedDatabaseNames = Properties.Settings.Default.DatabasesToSearch;
+            if (selectedDatabaseNames.Contains("All"))
+            {
+                return;
+            }
+            else
+            {
+                databaseNameList.BeginUpdate();
+
+                foreach (MaterialDatabaseDescriptor d in materialDatabases)
+                {
+                    if (selectedDatabaseNames.Contains(d.Name))
+                    {
+                        databaseNameList.SetSelected(databaseNameList.Items.IndexOf(d), true);
+                    }
+                }
+                databaseNameList.EndUpdate();
+            }
+        }
+
+        /// <summary>
+        /// Enable the search button if any text exists in the search box, otherwise disable it.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void updateSearchButton(object sender, EventArgs e)
         {
             TextBox tb = sender as TextBox;
             searchButton.Enabled = (tb.Text != string.Empty);
         }
 
+        /// <summary>
+        /// Perom the search if enter is pressed
+        /// </summary>
+        /// <param name="sender">the event source</param>
+        /// <param name="e">the event arguments</param>
         private void enterPressed(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Enter)
@@ -123,11 +205,21 @@ namespace org.duckdns.buttercup.MaterialSearch
             }
         }
 
+        /// <summary>
+        /// If a table row is selected, enable the Apply button, otherwise disable it
+        /// </summary>
+        /// <param name="sender">the event source</param>
+        /// <param name="e">the event arguments</param>
         private void updateApplyButton(object sender, DataGridViewRowStateChangedEventArgs e)
         {
             applyButton.Enabled = resultDataGridView.SelectedRows.Count > 0;
         }
 
+        /// <summary>
+        /// Update the <see cref=">SelectedMaterial"/> property when a table row is selected
+        /// </summary>
+        /// <param name="sender"the event source</param>
+        /// <param name="e">the event arguments</param>
         private void updateSelection(object sender, EventArgs e)
         {
             DataGridViewSelectedRowCollection selRows = resultDataGridView.SelectedRows;
@@ -137,10 +229,42 @@ namespace org.duckdns.buttercup.MaterialSearch
             }
         }
 
+        /// <summary>
+        /// Display the configuration information dialog
+        /// </summary>
+        /// <param name="sender">the event source</param>
+        /// <param name="e">the event arguments</param>
         private void showConfigInfoDialog(object sender, EventArgs e)
         {
             ConfigInfoDialog cid = new ConfigInfoDialog(this.configInfo);
             DialogResult dr = cid.ShowDialog();
+        }
+
+        /// <summary>
+        /// Save user settintgs when the form is closing
+        /// </summary>
+        /// <param name="sender">the event source</param>
+        /// <param name="e">the event arguments</param>
+        private void saveSettings(object sender, FormClosingEventArgs e)
+        {
+            //Store form location
+            Form f = sender as MaterialSearchDialog;
+            Properties.Settings.Default.Location = f.Location;
+            //Store selected databases
+            System.Collections.Specialized.StringCollection databaseNames = new System.Collections.Specialized.StringCollection();
+            if (this.searchAllRadioButton.Checked)
+            {
+                databaseNames.Add("All");
+            } 
+            else
+            {
+                foreach (object obj in databaseNameList.SelectedItems)
+                {
+                    databaseNames.Add(obj.ToString());
+                }
+            }
+            Properties.Settings.Default.DatabasesToSearch = databaseNames;
+            Properties.Settings.Default.Save();
         }
     }
 }

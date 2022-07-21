@@ -153,6 +153,11 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <DependentUpon>Settings.settings</DependentUpon>
+    </Compile>
     <EmbeddedResource Include="ConfigInfoDialog.resx">
       <DependentUpon>ConfigInfoDialog.cs</DependentUpon>
     </EmbeddedResource>
@@ -161,8 +166,13 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <None Include="app.config" />
     <None Include="Properties\DataSources\ConfigInfo.datasource" />
     <None Include="Properties\DataSources\MaterialSearchResult.datasource" />
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
     <None Include="VSKeyFile.pfx" />
   </ItemGroup>
   <ItemGroup>
