@@ -189,6 +189,7 @@ namespace org.duckdns.buttercup.MaterialSearch
         {
             TextBox tb = sender as TextBox;
             searchButton.Enabled = (tb.Text != string.Empty);
+            performSearch(sender, e);
         }
 
         /// <summary>
