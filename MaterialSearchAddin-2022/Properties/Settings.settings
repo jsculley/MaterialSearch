@@ -11,5 +11,8 @@
   &lt;string&gt;All&lt;/string&gt;
 &lt;/ArrayOfString&gt;</Value>
     </Setting>
+    <Setting Name="Size" Type="System.Drawing.Size" Scope="User">
+      <Value Profile="(Default)">641, 457</Value>
+    </Setting>
   </Settings>
 </SettingsFile>
