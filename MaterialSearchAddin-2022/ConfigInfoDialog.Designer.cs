@@ -60,6 +60,7 @@ namespace org.duckdns.buttercup.MaterialSearch
             this.thisConfigRadioButton = new System.Windows.Forms.RadioButton();
             this.allConfigRadioButton = new System.Windows.Forms.RadioButton();
             this.specifyConfigRadioButton = new System.Windows.Forms.RadioButton();
+            this.treeView1 = new System.Windows.Forms.TreeView();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -67,7 +68,7 @@ namespace org.duckdns.buttercup.MaterialSearch
             // 
             this.okButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.okButton.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.okButton.Location = new System.Drawing.Point(112, 289);
+            this.okButton.Location = new System.Drawing.Point(285, 549);
             this.okButton.Name = "okButton";
             this.okButton.Size = new System.Drawing.Size(75, 23);
             this.okButton.TabIndex = 0;
@@ -79,7 +80,7 @@ namespace org.duckdns.buttercup.MaterialSearch
             // 
             this.cancelButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.cancelButton.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.cancelButton.Location = new System.Drawing.Point(198, 289);
+            this.cancelButton.Location = new System.Drawing.Point(371, 549);
             this.cancelButton.Name = "cancelButton";
             this.cancelButton.Size = new System.Drawing.Size(75, 23);
             this.cancelButton.TabIndex = 1;
@@ -91,33 +92,33 @@ namespace org.duckdns.buttercup.MaterialSearch
             this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox1.Controls.Add(this.treeView1);
             this.groupBox1.Controls.Add(this.configNameListBox);
             this.groupBox1.Controls.Add(this.resetSelectionButton);
             this.groupBox1.Controls.Add(this.selectAllButton);
             this.groupBox1.Location = new System.Drawing.Point(12, 116);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(261, 167);
+            this.groupBox1.Size = new System.Drawing.Size(434, 427);
             this.groupBox1.TabIndex = 2;
             this.groupBox1.TabStop = false;
-            this.groupBox1.Text = "Specify the configuraions  to be modified";
+            this.groupBox1.Text = "Specify the configurations  to be modified";
             // 
             // configNameListBox
             // 
-            this.configNameListBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
+            this.configNameListBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.configNameListBox.FormattingEnabled = true;
             this.configNameListBox.Location = new System.Drawing.Point(6, 19);
             this.configNameListBox.Name = "configNameListBox";
             this.configNameListBox.SelectionMode = System.Windows.Forms.SelectionMode.MultiExtended;
-            this.configNameListBox.Size = new System.Drawing.Size(249, 108);
+            this.configNameListBox.Size = new System.Drawing.Size(422, 160);
             this.configNameListBox.TabIndex = 2;
             // 
             // resetSelectionButton
             // 
             this.resetSelectionButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.resetSelectionButton.Enabled = false;
-            this.resetSelectionButton.Location = new System.Drawing.Point(159, 138);
+            this.resetSelectionButton.Location = new System.Drawing.Point(332, 398);
             this.resetSelectionButton.Name = "resetSelectionButton";
             this.resetSelectionButton.Size = new System.Drawing.Size(96, 23);
             this.resetSelectionButton.TabIndex = 1;
@@ -129,7 +130,7 @@ namespace org.duckdns.buttercup.MaterialSearch
             // 
             this.selectAllButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.selectAllButton.Enabled = false;
-            this.selectAllButton.Location = new System.Drawing.Point(6, 138);
+            this.selectAllButton.Location = new System.Drawing.Point(6, 398);
             this.selectAllButton.Name = "selectAllButton";
             this.selectAllButton.Size = new System.Drawing.Size(75, 23);
             this.selectAllButton.TabIndex = 0;
@@ -172,11 +173,19 @@ namespace org.duckdns.buttercup.MaterialSearch
             this.specifyConfigRadioButton.UseVisualStyleBackColor = true;
             this.specifyConfigRadioButton.CheckedChanged += new System.EventHandler(this.specifyConfigRadioButton_CheckedChanged);
             // 
+            // treeView1
+            // 
+            this.treeView1.CheckBoxes = true;
+            this.treeView1.Location = new System.Drawing.Point(6, 186);
+            this.treeView1.Name = "treeView1";
+            this.treeView1.Size = new System.Drawing.Size(422, 182);
+            this.treeView1.TabIndex = 3;
+            // 
             // ConfigInfoDialog
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(285, 324);
+            this.ClientSize = new System.Drawing.Size(458, 584);
             this.Controls.Add(this.specifyConfigRadioButton);
             this.Controls.Add(this.allConfigRadioButton);
             this.Controls.Add(this.thisConfigRadioButton);
@@ -203,5 +212,6 @@ namespace org.duckdns.buttercup.MaterialSearch
         private System.Windows.Forms.RadioButton thisConfigRadioButton;
         private System.Windows.Forms.RadioButton allConfigRadioButton;
         private System.Windows.Forms.RadioButton specifyConfigRadioButton;
+        private System.Windows.Forms.TreeView treeView1;
     }
 }

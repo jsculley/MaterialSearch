@@ -38,7 +38,7 @@ namespace org.duckdns.buttercup.MaterialSearch
         /// <summary>
         /// Information abot the configurations that a material will be applied to
         /// </summary>
-        private ConfigInfo configInfo;
+        private List<ConfigInfo> configInfoList;
 
         /// <summary>
         /// The currently selected material
@@ -52,12 +52,16 @@ namespace org.duckdns.buttercup.MaterialSearch
         /// </summary>
         /// <param name="materialDatabases">the material databases that should appear in the dialog</param>
         /// <param name="configInfo">the <see cref="ConfigInfo"/> object that will be populated for the caller</param>
-        public MaterialSearchDialog(List<MaterialDatabaseDescriptor> materialDatabases, ConfigInfo configInfo)
+        public MaterialSearchDialog(List<MaterialDatabaseDescriptor> materialDatabases, List<ConfigInfo> configInfoList)
         {
             this.materialDatabases = materialDatabases;
-            this.configInfo = configInfo;
+            this.configInfoList = configInfoList;
             this.materialDatabases.Sort();
             InitializeComponent();
+            if (configInfoList.Count == 0)
+            {
+                this.configButton.Enabled = false;
+            }
             applySavedSettings();
         }
 
@@ -237,7 +241,7 @@ namespace org.duckdns.buttercup.MaterialSearch
         /// <param name="e">the event arguments</param>
         private void showConfigInfoDialog(object sender, EventArgs e)
         {
-            ConfigInfoDialog cid = new ConfigInfoDialog(this.configInfo);
+            ConfigInfoDialog cid = new ConfigInfoDialog(this.configInfoList,false);
             DialogResult dr = cid.ShowDialog();
         }
 

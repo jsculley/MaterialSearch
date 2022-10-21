@@ -21,6 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
+using SolidWorks.Interop.sldworks;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,12 +31,14 @@ namespace org.duckdns.buttercup.MaterialSearch
     public class ConfigInfo
     {
         private Dictionary<string, bool> selectedConfigs = new Dictionary<string, bool>();
-        public ConfigInfo(Target target, IEnumerable<String> configNames = null)
+        public ConfigInfo(ModelDoc2 targetDoc, Target target, IEnumerable<String> configNames = null)
         {
+            this.TargetDoc = targetDoc;
             this.AppliesTo = target;
             this.ConfigNames = configNames;
             
         }
+        public ModelDoc2 TargetDoc { get; set; }
         public Target AppliesTo { get; set; }
         public IEnumerable<String> ConfigNames { get; private set; }
 

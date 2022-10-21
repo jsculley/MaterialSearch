@@ -34,15 +34,35 @@ namespace org.duckdns.buttercup.MaterialSearch
 {
     public partial class ConfigInfoDialog : Form
     {
-        private ConfigInfo configInfo;
+        private List<ConfigInfo> configInfoList;
         //public ConfigInfo SelectedConfigs { get; private set; }
         private int[] currentSelections;
-        public ConfigInfoDialog(ConfigInfo configInfo)
+        public ConfigInfoDialog(List<ConfigInfo> configInfoList, bool multipleDocumentsSelected)
         {
-            this.configInfo = configInfo;
+            this.configInfoList = configInfoList;
             InitializeComponent();
-            this.configNameListBox.DataSource = configInfo.ConfigNames;
-            this.configNameListBox.Enabled = this.specifyConfigRadioButton.Checked;
+            buildConfigTree();
+            this.configNameListBox.DataSource = configInfoList[0].ConfigNames;
+            if (multipleDocumentsSelected)
+            {
+                this.specifyConfigRadioButton.Enabled = false;
+            }
+            this.configNameListBox.Enabled = this.specifyConfigRadioButton.Enabled && this.specifyConfigRadioButton.Checked;
+        }
+
+        private void buildConfigTree()
+        {
+            foreach(ConfigInfo ci in configInfoList)
+            {
+                TreeNode tn = new TreeNode();
+                tn.Text = ci.TargetDoc.GetTitle();
+                foreach (string s in ci.ConfigNames)
+                {
+                    tn.Nodes.Add(s);
+                }
+                this.treeView1.Nodes.Add(tn);
+            }
+            
         }
 
         private void selectAllButton_Click(object sender, EventArgs e)
@@ -74,7 +94,7 @@ namespace org.duckdns.buttercup.MaterialSearch
             resetSelectionButton.Enabled = specifyConfigRadioButton.Checked;
             if (specifyConfigRadioButton.Checked)
             {
-                this.configInfo.AppliesTo = Target.SELECTED;
+                this.configInfoList[0].AppliesTo = Target.SELECTED;
             }
         }
 
@@ -84,7 +104,7 @@ namespace org.duckdns.buttercup.MaterialSearch
             selectedConfigs.Cast<string>();
             foreach (string s in selectedConfigs)
             {
-                configInfo.selectConfig(s);
+                configInfoList[0].selectConfig(s);
                 Debug.Print(s);
             }
         }
@@ -93,7 +113,7 @@ namespace org.duckdns.buttercup.MaterialSearch
         {
             if (thisConfigRadioButton.Checked)
             {
-                this.configInfo.AppliesTo = Target.CURRENT;
+                this.configInfoList[0].AppliesTo = Target.CURRENT;
             }
         }
 
@@ -101,7 +121,7 @@ namespace org.duckdns.buttercup.MaterialSearch
         {
             if (this.allConfigRadioButton.Checked)
             {
-                this.configInfo.AppliesTo = Target.ALL;
+                this.configInfoList[0].AppliesTo = Target.ALL;
             }
         }
     }
