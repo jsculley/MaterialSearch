@@ -114,7 +114,7 @@ namespace org.duckdns.buttercup.MaterialSearch
                     string materialDescription = "";
                     string searchText = searchTermTextBox.Text;
                     string materialName = nextMaterial.Attribute("name").Value;
-                    if (nextMaterial.Attribute("name").Value.IndexOf(searchTermTextBox.Text, StringComparison.OrdinalIgnoreCase) >= 0)
+                    if (materialName.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) >= 0)
                     {
                         XAttribute descAttr = nextMaterial.Attribute("description");
                         if (descAttr != null)
@@ -129,8 +129,9 @@ namespace org.duckdns.buttercup.MaterialSearch
                     {
                         continue;
                     }
-                    if (descriptionAttr.Value.IndexOf(searchTermTextBox.Text, StringComparison.OrdinalIgnoreCase) >= 0)
+                    if (descriptionAttr.Value.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) >= 0)
                     {
+                        materialDescription = descriptionAttr.Value;
                         matches.Add(new MaterialSearchResult(mdd.Name, materialName, materialDescription));
                     }
                 }
@@ -271,6 +272,12 @@ namespace org.duckdns.buttercup.MaterialSearch
             }
             Properties.Settings.Default.DatabasesToSearch = databaseNames;
             Properties.Settings.Default.Save();
+        }
+
+        private void applyAndClose(object sender, DataGridViewCellEventArgs e)
+        {
+            this.DialogResult = DialogResult.OK;
+            this.Close();
         }
     }
 }

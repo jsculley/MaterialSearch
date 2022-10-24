@@ -7,11 +7,14 @@
 		<MediaTemplate EmbedCab="yes"/>
     <UIRef Id="WixUI_Advanced" />
     <UIRef Id="WixUI_Common" />
+    <Icon Id="mat_search_96.ico" SourceFile="Resources\mat_search_96.ico"/>
+    <Property Id="ARPPRODUCTICON" Value="mat_search_96.ico" />
     <!-->Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" /-->
     <Property Id="ApplicationFolderName" Value="Material Search Add-In" />
     <Property Id="WixAppFolder" Value="WixPerMachineFolder" />
     <WixVariable Id="WixUILicenseRtf" Value="Resources\eula.rtf" />
-    
+    <WixVariable Id="WixUIBannerBmp" Value="Resources\matsearch-top-banner.bmp" />
+    <WixVariable Id="WixUIDialogBmp" Value="Resources\matsearch-welcome-banner.bmp" />
     <Feature Id="ProductFeature" Title="Material Search Addin" Level="1">
       <ComponentGroupRef Id="AddInComRegGroup"/>
       <ComponentGroupRef Id="FilesRegGroup" />

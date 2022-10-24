@@ -54,6 +54,7 @@ namespace org.duckdns.buttercup.MaterialSearch
             this.components = new System.ComponentModel.Container();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MaterialSearchDialog));
             this.applyButton = new System.Windows.Forms.Button();
             this.closeButton = new System.Windows.Forms.Button();
             this.searchButton = new System.Windows.Forms.Button();
@@ -65,12 +66,12 @@ namespace org.duckdns.buttercup.MaterialSearch
             this.searchAllRadioButton = new System.Windows.Forms.RadioButton();
             this.openLibraryButton = new System.Windows.Forms.Button();
             this.resultDataGridView = new System.Windows.Forms.DataGridView();
+            this.resultsLabel = new System.Windows.Forms.Label();
+            this.configButton = new System.Windows.Forms.Button();
             this.libraryDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.materialNameDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.descriptionDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.materialSearchResultBindingSource = new System.Windows.Forms.BindingSource(this.components);
-            this.resultsLabel = new System.Windows.Forms.Label();
-            this.configButton = new System.Windows.Forms.Button();
             this.searchScopeGroupBox.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.resultDataGridView)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.materialSearchResultBindingSource)).BeginInit();
@@ -84,7 +85,7 @@ namespace org.duckdns.buttercup.MaterialSearch
             this.applyButton.Location = new System.Drawing.Point(368, 383);
             this.applyButton.Name = "applyButton";
             this.applyButton.Size = new System.Drawing.Size(75, 23);
-            this.applyButton.TabIndex = 0;
+            this.applyButton.TabIndex = 7;
             this.applyButton.Text = "Apply";
             this.applyButton.UseVisualStyleBackColor = true;
             // 
@@ -95,7 +96,7 @@ namespace org.duckdns.buttercup.MaterialSearch
             this.closeButton.Location = new System.Drawing.Point(449, 383);
             this.closeButton.Name = "closeButton";
             this.closeButton.Size = new System.Drawing.Size(75, 23);
-            this.closeButton.TabIndex = 2;
+            this.closeButton.TabIndex = 8;
             this.closeButton.Text = "Close";
             this.closeButton.UseVisualStyleBackColor = true;
             // 
@@ -106,7 +107,7 @@ namespace org.duckdns.buttercup.MaterialSearch
             this.searchButton.Location = new System.Drawing.Point(530, 22);
             this.searchButton.Name = "searchButton";
             this.searchButton.Size = new System.Drawing.Size(83, 23);
-            this.searchButton.TabIndex = 4;
+            this.searchButton.TabIndex = 1;
             this.searchButton.Text = "Search";
             this.searchButton.UseVisualStyleBackColor = true;
             this.searchButton.Click += new System.EventHandler(this.performSearch);
@@ -122,7 +123,7 @@ namespace org.duckdns.buttercup.MaterialSearch
             this.databaseNameList.SelectionMode = System.Windows.Forms.SelectionMode.MultiExtended;
             this.databaseNameList.Size = new System.Drawing.Size(517, 95);
             this.databaseNameList.Sorted = true;
-            this.databaseNameList.TabIndex = 9;
+            this.databaseNameList.TabIndex = 5;
             // 
             // searchTermTextBox
             // 
@@ -131,7 +132,7 @@ namespace org.duckdns.buttercup.MaterialSearch
             this.searchTermTextBox.Location = new System.Drawing.Point(15, 24);
             this.searchTermTextBox.Name = "searchTermTextBox";
             this.searchTermTextBox.Size = new System.Drawing.Size(507, 20);
-            this.searchTermTextBox.TabIndex = 8;
+            this.searchTermTextBox.TabIndex = 0;
             this.searchTermTextBox.TextChanged += new System.EventHandler(this.updateSearchButton);
             this.searchTermTextBox.KeyDown += new System.Windows.Forms.KeyEventHandler(this.enterPressed);
             // 
@@ -154,7 +155,7 @@ namespace org.duckdns.buttercup.MaterialSearch
             this.searchScopeGroupBox.Location = new System.Drawing.Point(12, 50);
             this.searchScopeGroupBox.Name = "searchScopeGroupBox";
             this.searchScopeGroupBox.Size = new System.Drawing.Size(601, 137);
-            this.searchScopeGroupBox.TabIndex = 14;
+            this.searchScopeGroupBox.TabIndex = 2;
             this.searchScopeGroupBox.TabStop = false;
             this.searchScopeGroupBox.Text = "Material libraries to search";
             // 
@@ -164,7 +165,7 @@ namespace org.duckdns.buttercup.MaterialSearch
             this.searchSelectedRadioButton.Location = new System.Drawing.Point(7, 44);
             this.searchSelectedRadioButton.Name = "searchSelectedRadioButton";
             this.searchSelectedRadioButton.Size = new System.Drawing.Size(65, 17);
-            this.searchSelectedRadioButton.TabIndex = 1;
+            this.searchSelectedRadioButton.TabIndex = 4;
             this.searchSelectedRadioButton.Text = "selected";
             this.searchSelectedRadioButton.UseVisualStyleBackColor = true;
             this.searchSelectedRadioButton.CheckedChanged += new System.EventHandler(this.updateListBoxStatus);
@@ -175,7 +176,7 @@ namespace org.duckdns.buttercup.MaterialSearch
             this.searchAllRadioButton.Location = new System.Drawing.Point(7, 20);
             this.searchAllRadioButton.Name = "searchAllRadioButton";
             this.searchAllRadioButton.Size = new System.Drawing.Size(35, 17);
-            this.searchAllRadioButton.TabIndex = 0;
+            this.searchAllRadioButton.TabIndex = 3;
             this.searchAllRadioButton.Text = "all";
             this.searchAllRadioButton.UseVisualStyleBackColor = true;
             // 
@@ -186,7 +187,7 @@ namespace org.duckdns.buttercup.MaterialSearch
             this.openLibraryButton.Location = new System.Drawing.Point(12, 383);
             this.openLibraryButton.Name = "openLibraryButton";
             this.openLibraryButton.Size = new System.Drawing.Size(94, 23);
-            this.openLibraryButton.TabIndex = 16;
+            this.openLibraryButton.TabIndex = 10;
             this.openLibraryButton.Text = "Open Library";
             this.openLibraryButton.UseVisualStyleBackColor = true;
             // 
@@ -224,9 +225,30 @@ namespace org.duckdns.buttercup.MaterialSearch
             this.resultDataGridView.RowHeadersVisible = false;
             this.resultDataGridView.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             this.resultDataGridView.Size = new System.Drawing.Size(595, 150);
-            this.resultDataGridView.TabIndex = 0;
+            this.resultDataGridView.TabIndex = 6;
+            this.resultDataGridView.CellDoubleClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.applyAndClose);
             this.resultDataGridView.RowStateChanged += new System.Windows.Forms.DataGridViewRowStateChangedEventHandler(this.updateApplyButton);
             this.resultDataGridView.SelectionChanged += new System.EventHandler(this.updateSelection);
+            // 
+            // resultsLabel
+            // 
+            this.resultsLabel.AutoSize = true;
+            this.resultsLabel.Location = new System.Drawing.Point(12, 209);
+            this.resultsLabel.Name = "resultsLabel";
+            this.resultsLabel.Size = new System.Drawing.Size(42, 13);
+            this.resultsLabel.TabIndex = 17;
+            this.resultsLabel.Text = "Results";
+            // 
+            // configButton
+            // 
+            this.configButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.configButton.Location = new System.Drawing.Point(530, 383);
+            this.configButton.Name = "configButton";
+            this.configButton.Size = new System.Drawing.Size(75, 23);
+            this.configButton.TabIndex = 9;
+            this.configButton.Text = "Config...";
+            this.configButton.UseVisualStyleBackColor = true;
+            this.configButton.Click += new System.EventHandler(this.showConfigInfoDialog);
             // 
             // libraryDataGridViewTextBoxColumn
             // 
@@ -259,26 +281,6 @@ namespace org.duckdns.buttercup.MaterialSearch
             // 
             this.materialSearchResultBindingSource.DataSource = typeof(org.duckdns.buttercup.MaterialSearch.MaterialSearchResult);
             // 
-            // resultsLabel
-            // 
-            this.resultsLabel.AutoSize = true;
-            this.resultsLabel.Location = new System.Drawing.Point(12, 209);
-            this.resultsLabel.Name = "resultsLabel";
-            this.resultsLabel.Size = new System.Drawing.Size(42, 13);
-            this.resultsLabel.TabIndex = 17;
-            this.resultsLabel.Text = "Results";
-            // 
-            // configButton
-            // 
-            this.configButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.configButton.Location = new System.Drawing.Point(530, 383);
-            this.configButton.Name = "configButton";
-            this.configButton.Size = new System.Drawing.Size(75, 23);
-            this.configButton.TabIndex = 18;
-            this.configButton.Text = "Config...";
-            this.configButton.UseVisualStyleBackColor = true;
-            this.configButton.Click += new System.EventHandler(this.showConfigInfoDialog);
-            // 
             // MaterialSearchDialog
             // 
             this.AcceptButton = this.searchButton;
@@ -295,6 +297,7 @@ namespace org.duckdns.buttercup.MaterialSearch
             this.Controls.Add(this.searchTermTextBox);
             this.Controls.Add(this.searchButton);
             this.Controls.Add(this.closeButton);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "MaterialSearchDialog";
             this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
             this.Text = "Material Search";
