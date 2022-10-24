@@ -269,5 +269,11 @@ namespace org.duckdns.buttercup.MaterialSearch
             Properties.Settings.Default.DatabasesToSearch = databaseNames;
             Properties.Settings.Default.Save();
         }
+
+        private void applyAndClose(object sender, DataGridViewCellEventArgs e)
+        {
+            this.DialogResult = DialogResult.OK;
+            this.Close();
+        }
     }
 }
