@@ -23,85 +23,175 @@ THE SOFTWARE.
 */
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
 using System.Linq;
-using System.Text;
 using System.Windows.Forms;
-using System.Diagnostics;
+using SolidWorks.Interop.sldworks;
+
 namespace org.duckdns.buttercup.MaterialSearch
 {
     public partial class ConfigInfoDialog : Form
     {
-        private ConfigInfo configInfo;
-        //public ConfigInfo SelectedConfigs { get; private set; }
-        private int[] currentSelections;
-        public ConfigInfoDialog(ConfigInfo configInfo)
+        private List<TargetInfo> targetInfoList;
+
+        /// <summary>
+        /// The form constructor
+        /// </summary>
+        /// <param name="targetInfoList">a list of <see cref="TargetInfo"/> objects that
+        /// wil be used to populate the form</param>
+        public ConfigInfoDialog(List<TargetInfo> targetInfoList)
         {
-            this.configInfo = configInfo;
+            this.targetInfoList = targetInfoList;
             InitializeComponent();
-            this.configNameListBox.DataSource = configInfo.ConfigNames;
-            this.configNameListBox.Enabled = this.specifyConfigRadioButton.Checked;
+            buildConfigTree();
+            this.configTreeView.ExpandAll();
         }
 
+        /// <summary>
+        /// Build a TreeNode structure from the configurations of the documents where  materials
+        /// are to be applied.  If the selections came from an assembly document, each document 
+        /// with selections is a top level node.  A document's configurations and derived
+        /// configurations appear beneath it.  By default, check marks are applied for the active
+        /// configuration if selections came form a part document.  If selections were made in an
+        /// assembly document, check marks are applied to the configuration of the selected instance
+        /// in the assembly.  If multiple instances of the same component but with different
+        /// configurations are selected, each configuration will have a check mark.
+        /// </summary>
+        private void buildConfigTree()
+        {
+            foreach (TargetInfo ti in targetInfoList)
+            {
+                TreeNode tn = new TreeNode(ti.TargetDoc.GetTitle());
+                tn.Name = ti.TargetDoc.GetTitle();
+                tn.ImageIndex = 0;
+                tn.SelectedImageIndex = 0;
+                List<string> configNames = new List<string>(ti.TargetDoc.GetConfigurationNames());
+                configNames.Reverse();
+                while (configNames.Count > 0)
+                {
+                    for (int i = configNames.Count - 1; i >= 0; i--)
+                    {
+                        Configuration nextConfig = ti.TargetDoc.GetConfigurationByName(configNames[i]);
+                        if (nextConfig.GetParent() == null) //top level node
+                        {
+                            TreeNode nextNode = tn.Nodes.Add(configNames[i]);
+                            nextNode.Name = configNames[i];
+                            if (ti.isDesignTableConfig(configNames[i]))
+                            {
+                                nextNode.ImageIndex = (nextConfig.GetChildrenCount() > 0) ? 4 : 3;
+                                nextNode.SelectedImageIndex = nextNode.ImageIndex;
+                            }
+                            else
+                            {
+                                nextNode.ImageIndex = (nextConfig.GetChildrenCount() > 0) ? 2 : 1;
+                                nextNode.SelectedImageIndex = nextNode.ImageIndex;
+                            }
+                            nextNode.Checked = ti.TargetConfigs.Contains(configNames[i]);
+                            configNames.Remove(configNames[i]);
+                            continue;
+                            
+                        }
+                        Configuration parentConfig = nextConfig.GetParent();
+                        TreeNode parentNode = parentNode = flattenTree(tn.Nodes).FirstOrDefault(r => r.Text.Equals(parentConfig.Name));
+                        if (parentNode != null)
+                        {
+                            TreeNode nextNode = parentNode.Nodes.Add(configNames[i]);
+                            nextNode.Name = configNames[i];
+                            nextNode.ImageIndex = (nextConfig.GetChildrenCount() > 0) ? 2 : 1;
+                            nextNode.Checked = ti.TargetConfigs.Contains(configNames[i]);
+                            configNames.Remove(configNames[i]);
+                            continue;
+                        }
+                    }
+                }
+                this.configTreeView.Nodes.Add(tn);
+            }
+        }
+      
+        /// <summary>
+        /// Squashes a TreeNodeCollection so that all descendants are in one IEnumerable list
+        /// </summary>
+        /// <param name="nodes">the </param>
+        /// <returns>the flattened IEnumerable of TreeNodes</returns>
+        private static IEnumerable<TreeNode> flattenTree(TreeNodeCollection nodes)
+        {
+            return nodes.Cast<TreeNode>()
+                        .Concat(nodes.Cast<TreeNode>()
+                                    .SelectMany(x => flattenTree(x.Nodes)));
+        }
+
+
+        /// <summary>
+        /// Selects all the nodes in the tree
+        /// </summary>
+        /// <param name="sender">the event source</param>
+        /// <param name="e">the event arguments</param>
         private void selectAllButton_Click(object sender, EventArgs e)
         {
-            //Store current selections
-            currentSelections = new int[configNameListBox.SelectedItems.Count];
-            configNameListBox.SelectedIndices.CopyTo(currentSelections,0);
-            //Select all configs
-            for (int i = 0; i < configNameListBox.Items.Count; i++)
+            foreach (TreeNode Node in configTreeView.Nodes)
             {
-                configNameListBox.SetSelected(i, true);
+                Node.Checked = true;
             }
         }
 
+        /// <summary>
+        /// Resets the tree to it's initial state where only configs associated
+        /// with the users original selections are checked
+        /// </summary>
+        /// <param name="sender">the event source</param>
+        /// <param name="e">the event args</param>
         private void resetSelectionButton_Click(object sender, EventArgs e)
         {
-            configNameListBox.ClearSelected();
-            //Restore current selections
-            foreach (int i in currentSelections)
+            //Clear any document node checks, which will clear all sub node checks
+            foreach (TreeNode tn in configTreeView.Nodes)
             {
-                configNameListBox.SetSelected(i, true);
+                tn.Checked = false;
+            }
+            foreach (TargetInfo ti in targetInfoList)
+            {
+                TreeNode docNode = configTreeView.Nodes[ti.TargetDoc.GetTitle()];
+                foreach(TreeNode tn in flattenTree(docNode.Nodes))
+                {
+                    tn.Checked = ti.TargetConfigs.Contains(tn.Text);
+                }
             }
         }
 
-        private void specifyConfigRadioButton_CheckedChanged(object sender, EventArgs e)
-        {
-            configNameListBox.Enabled = specifyConfigRadioButton.Checked;
-            selectAllButton.Enabled = specifyConfigRadioButton.Checked;
-            resetSelectionButton.Enabled = specifyConfigRadioButton.Checked;
-            if (specifyConfigRadioButton.Checked)
-            {
-                this.configInfo.AppliesTo = Target.SELECTED;
-            }
-        }
-
+        /// <summary>
+        /// Update the list of <see cref="TargetInfo"/> objects with any newly
+        /// selected configurations
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void okButton_Click(object sender, EventArgs e)
         {
-            ListBox.SelectedObjectCollection selectedConfigs = configNameListBox.SelectedItems;
-            selectedConfigs.Cast<string>();
-            foreach (string s in selectedConfigs)
+            foreach (TargetInfo ti in this.targetInfoList)
             {
-                configInfo.selectConfig(s);
-                Debug.Print(s);
+                TreeNode docNode = configTreeView.Nodes[ti.TargetDoc.GetTitle()];
+                foreach (TreeNode childNode in flattenTree(docNode.Nodes))
+                {
+                    if (childNode.Checked && !ti.TargetConfigs.Contains(childNode.Name))
+                    {
+                        ti.TargetConfigs.Add(childNode.Name);
+                    }
+                    else if (!childNode.Checked && ti.TargetConfigs.Contains(childNode.Name))
+                    {
+                        ti.TargetConfigs.Remove(childNode.Name);
+                    }
+                }
             }
         }
 
-        private void thisConfigRadioButton_CheckedChanged(object sender, EventArgs e)
-        {
-            if (thisConfigRadioButton.Checked)
-            {
-                this.configInfo.AppliesTo = Target.CURRENT;
-            }
-        }
 
-        private void allConfigRadioButton_CheckedChanged(object sender, EventArgs e)
+        /// <summary>
+        /// Update child nodes when the parent is checked or unchecked
+        /// </summary>
+        /// <param name="sender">the event source</param>
+        /// <param name="e">the event args</param>
+        private void toggleChildNodes(object sender, TreeViewEventArgs e)
         {
-            if (this.allConfigRadioButton.Checked)
+            foreach (TreeNode nextChild in e.Node.Nodes)
             {
-                this.configInfo.AppliesTo = Target.ALL;
+                nextChild.Checked = e.Node.Checked;
             }
         }
     }

@@ -43,6 +43,7 @@
     <Content Include="DirectoryHeatTransform.xslt" />
     <Content Include="Resources\eula.rtf" />
     <Content Include="Resources\matsearch-top-banner.bmp" />
+    <Content Include="Resources\matsearch-welcome-banner.bmp" />
     <Content Include="Resources\mat_search.ico" />
     <Content Include="Resources\mat_search_96.ico" />
   </ItemGroup>
