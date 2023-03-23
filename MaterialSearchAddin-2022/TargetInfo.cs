@@ -28,49 +28,35 @@ using System.Linq;
 
 namespace org.duckdns.buttercup.MaterialSearch
 {
-    public class ConfigInfo
+    public class TargetInfo
     {
-        private Dictionary<string, bool> selectedConfigs = new Dictionary<string, bool>();
-        public ConfigInfo(ModelDoc2 targetDoc, Target target, IEnumerable<String> configNames = null)
+        public TargetInfo(ModelDoc2 targetDoc, List<string> targetConfigs)
         {
             this.TargetDoc = targetDoc;
-            this.AppliesTo = target;
-            this.ConfigNames = configNames;
+            this.TargetConfigs = targetConfigs;
             
         }
         public ModelDoc2 TargetDoc { get; set; }
-        public Target AppliesTo { get; set; }
-        public IEnumerable<String> ConfigNames { get; private set; }
+        public List<string> TargetConfigs { get; set; }
+        //public Dictionary<string, string> ConfigData { get; private set; }
 
-        public IEnumerable<string> SelectedConfigs
+        public bool isDerived(string configName)
         {
-            get
-            {
-                IEnumerable<string> result = null;
-                switch (this.AppliesTo)
-                {
-                    case Target.ALL:
-                        result = ConfigNames;
-                        break;
-                    case Target.CURRENT:
-                        break;
-                    case Target.SELECTED:
-                        result = selectedConfigs.Where(kvp => kvp.Value).ToDictionary(i => i.Key, i => i.Value).Keys;
-                        break;
-                }
-                return result;
-            }
-            private set { }
+            Configuration c = TargetDoc.GetConfigurationByName(configName);
+            return c.IsDerived();
         }
 
-            public void selectConfig(string configName)
-            {
-                selectedConfigs[configName] = true;
-            }
-    }
-
-    public enum Target
-    {
-        CURRENT, ALL, SELECTED
+        /// <summary>
+        /// Check if a config is an entry in a design table
+        /// </summary>
+        /// <param name="configName">the name of the configuration to check</param>
+        /// <returns><b>true</b> if the configuration is in the design table, <b>false</b> otherwise</returns>
+        /// This method cannot work effectively until
+        /// SPR 289114 -- Would like API to tell whether configuration is driven by Design Table is implemented
+        /// so we just return false for now
+        public bool isDesignTableConfig(string configName)
+        {
+            return false;
+        }
     }
 }

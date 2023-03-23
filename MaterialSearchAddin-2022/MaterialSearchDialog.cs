@@ -38,7 +38,12 @@ namespace org.duckdns.buttercup.MaterialSearch
         /// <summary>
         /// Information abot the configurations that a material will be applied to
         /// </summary>
-        private ConfigInfo configInfo;
+        private List<TargetInfo> configInfoList;
+
+        /// <summary>
+        /// Flag for whether the 'Config' button should be enabled or not
+        /// </summary>
+        private bool configButtonEnabled;
 
         /// <summary>
         /// The currently selected material
@@ -47,17 +52,22 @@ namespace org.duckdns.buttercup.MaterialSearch
 
 
         /// <summary>
-        /// Construct a dialog from the given databases with a <see cref="ConfigInfo"/> object that
+        /// Construct a dialog from the given databases with a <see cref="TargetInfo"/> object that
         /// act to transfer configuration info back to the caller
         /// </summary>
         /// <param name="materialDatabases">the material databases that should appear in the dialog</param>
-        /// <param name="configInfo">the <see cref="ConfigInfo"/> object that will be populated for the caller</param>
-        public MaterialSearchDialog(List<MaterialDatabaseDescriptor> materialDatabases, ConfigInfo configInfo)
+        /// <param name="configInfo">the <see cref="TargetInfo"/> object that will be populated for the caller</param>
+        public MaterialSearchDialog(List<MaterialDatabaseDescriptor> materialDatabases, List<TargetInfo> configInfoList, bool enableConfigButton)
         {
             this.materialDatabases = materialDatabases;
-            this.configInfo = configInfo;
+            this.configInfoList = configInfoList;
+            this.configButtonEnabled = enableConfigButton;
             this.materialDatabases.Sort();
             InitializeComponent();
+            if (configInfoList.Count == 0 || !this.configButtonEnabled)
+            {
+                this.configButton.Enabled = false;
+            }
             applySavedSettings();
         }
 
@@ -110,7 +120,7 @@ namespace org.duckdns.buttercup.MaterialSearch
                     string materialDescription = "";
                     string searchText = searchTermTextBox.Text;
                     string materialName = nextMaterial.Attribute("name").Value;
-                    if (nextMaterial.Attribute("name").Value.IndexOf(searchTermTextBox.Text, StringComparison.OrdinalIgnoreCase) >= 0)
+                    if (materialName.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) >= 0)
                     {
                         XAttribute descAttr = nextMaterial.Attribute("description");
                         if (descAttr != null)
@@ -125,8 +135,9 @@ namespace org.duckdns.buttercup.MaterialSearch
                     {
                         continue;
                     }
-                    if (descriptionAttr.Value.IndexOf(searchTermTextBox.Text, StringComparison.OrdinalIgnoreCase) >= 0)
+                    if (descriptionAttr.Value.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) >= 0)
                     {
+                        materialDescription = descriptionAttr.Value;
                         matches.Add(new MaterialSearchResult(mdd.Name, materialName, materialDescription));
                     }
                 }
@@ -237,7 +248,7 @@ namespace org.duckdns.buttercup.MaterialSearch
         /// <param name="e">the event arguments</param>
         private void showConfigInfoDialog(object sender, EventArgs e)
         {
-            ConfigInfoDialog cid = new ConfigInfoDialog(this.configInfo);
+            ConfigInfoDialog cid = new ConfigInfoDialog(this.configInfoList);
             DialogResult dr = cid.ShowDialog();
         }
 
@@ -267,6 +278,12 @@ namespace org.duckdns.buttercup.MaterialSearch
             }
             Properties.Settings.Default.DatabasesToSearch = databaseNames;
             Properties.Settings.Default.Save();
+        }
+
+        private void applyAndClose(object sender, DataGridViewCellEventArgs e)
+        {
+            this.DialogResult = DialogResult.OK;
+            this.Close();
         }
     }
 }

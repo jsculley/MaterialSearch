@@ -33,7 +33,7 @@ using System.Reflection;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("MaterialSearchAddin")]
-[assembly: AssemblyCopyright("Jim Sculley© 2022")]
+[assembly: AssemblyCopyright("Jim Sculley Â© 2022")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -50,4 +50,6 @@ using System.Reflection;
 
 //[assembly: AssemblyVersion("1.0.*")]
 
-[assembly: AssemblyVersion("0.3.22202.0")]
+[assembly: AssemblyVersion("0.4.22297.0")]
+[assembly: AssemblyFileVersion("0.4.22297.0")]
+[assembly: AssemblyInformationalVersion("0.4.22297.0")]
