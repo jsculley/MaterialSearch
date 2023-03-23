@@ -134,7 +134,7 @@
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ConfigInfo.cs" />
+    <Compile Include="TargetInfo.cs" />
     <Compile Include="ConfigInfoDialog.cs">
       <SubType>Form</SubType>
     </Compile>

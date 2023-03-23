@@ -214,8 +214,8 @@ namespace org.duckdns.buttercup.MaterialSearch
             if (command == (int)swCommands_e.swCommands_EditMaterial)
             {
                 initMaterialDatabases();
-                List<ConfigInfo> configInfoList = getConfigInfo();
-                MaterialSearchDialog d = new MaterialSearchDialog(materialDatabaseDescriptors, configInfoList);
+                List<TargetInfo> targetInfoList = getDefaultTargetInfo();
+                MaterialSearchDialog d = new MaterialSearchDialog(materialDatabaseDescriptors, targetInfoList, shouldEnableConfigButton());
                 DialogResult dr = d.ShowDialog();
                 switch (dr)
                 {
@@ -223,8 +223,8 @@ namespace org.duckdns.buttercup.MaterialSearch
                         return 0;
                     case DialogResult.Cancel: //the user clicked 'Cancel'
                         return 1;
-                    case DialogResult.OK: //the user clicked 'Apply'
-                        applyMaterial(d.SelectedMaterial, configInfoList);
+                    case DialogResult.OK: //the user clicked 'Apply' or double-clicked a material
+                        applyMaterial(d.SelectedMaterial, targetInfoList);
                         return 1;
                 }
             }
@@ -250,63 +250,46 @@ namespace org.duckdns.buttercup.MaterialSearch
             }
         }
 
-
-        private List<ConfigInfo> getConfigInfo()
-        {
-            List<ConfigInfo> configInfoList = new List<ConfigInfo>();
-            List<ModelDoc2> componentDocs = getTargetModelDocuments();
-            foreach (ModelDoc2 mDoc in componentDocs)
-            {
-                List<string> configNames = buildConfigNames(mDoc);
-                ConfigInfo configInfo = new ConfigInfo(mDoc, Target.CURRENT, configNames);
-                configInfoList.Add(configInfo);
-            }
-            return configInfoList;
-        }
         /// <summary>
-        /// Create a collection of config names with spaces padding the front
-        /// of derived configurations to give an indented tree look to the name list
+        /// Get a list of <see cref="TargetInfo"/> objects, one for each document associated with the user's
+        /// selections.
         /// </summary>
-        /// <returns>an indented list of configuration names</returns>
-        private List<string> buildConfigNames(ModelDoc2 mDoc)
+        /// <returnsa list of <see cref="TargetInfo"/>objects.  For part files, the default list of
+        /// selected configurations in the TargetInfo object will be only the current configuration.  
+        /// For selections made inside an assembly, the list of configurations will include the
+        /// configuration of each selected instance.</returns>
+        private List<TargetInfo> getDefaultTargetInfo()
         {
-            //ModelDoc2 mDoc = swApp.ActiveDoc as ModelDoc2;
-            object[] configNamesObjArray = mDoc.GetConfigurationNames();
-            List<string> configNames = new List<string>();
-            foreach (object obj in configNamesObjArray)
+            List<TargetInfo> targetInfoList = new List<TargetInfo>();
+            Dictionary<ModelDoc2, List<string>> componentDocsAndConfigs = getTargetModelDocumentsAndConfigs();
+            foreach (ModelDoc2 mDoc in componentDocsAndConfigs.Keys)
             {
-                string nextName = obj as string;
-                Configuration nextConfig = mDoc.GetConfigurationByName(nextName);
-                //Recursively pad the front of any derived config names
-                while (nextConfig != null && nextConfig.IsDerived())
-                {
-                    nextName = "    " + nextName;
-                    nextConfig = nextConfig.GetParent();
-                }
-                configNames.Add(nextName as string);
+                TargetInfo configInfo = new TargetInfo(mDoc, componentDocsAndConfigs[mDoc]);
+                targetInfoList.Add(configInfo);
             }
-            return configNames;
+            return targetInfoList.OrderBy(e => e.TargetDoc.GetTitle()).ToList();
         }
         
         /// <summary>
-        /// Apply a material in one or more configurations.  If the current document is an assembly, 
-        /// apply the material to the selected part(s) or selected bodies of the selected part(s)
+        /// Apply a material in one or more configurations to parts or bodies.  If the current 
+        /// document is an assembly, apply the material to the selected components(s) or selected 
+        /// bodies of the selected component(s).
         /// </summary>
         /// <param name="material">the material to be applied</param>
         /// <param name="configInfo">the configruation where the material should be applied</param>
         /// <returns><b>true</b> if the material was applied successfully, <b>false</b> otherwise</returns>
-        private void applyMaterial(MaterialSearchResult material, List<ConfigInfo> configInfoList)
+        private void applyMaterial(MaterialSearchResult material, List<TargetInfo> targetInfo)
         {
-            List<ModelDoc2> targetModelDocs = getTargetModelDocuments();
             ModelDoc2 mDoc = swApp.ActiveDoc as ModelDoc2;
             SelectionMgr selMgr = mDoc.SelectionManager;
-            foreach (ModelDoc2 nextModelDoc in targetModelDocs)
+            ModelDoc2 compDoc = null;
+            foreach (TargetInfo ti in targetInfo)
             {
-                string selTypeString = Enum.GetName(typeof(swSelectType_e), selMgr.GetSelectedObjectType3(1, -1));
                 if (selMgr.GetSelectedObjectCount2(-1) == 0)
                 {
-                    //No bodies or components are selected, so this must be a part document.  Apply material to entire part.
-                    applyMaterialToPart(nextModelDoc, material, configInfoList[0]);
+                    //No bodies or components are selected, so this must be a part document.
+                    //Apply material to entire part.
+                    applyMaterialToPart(material, ti);
                     return;
                 }
                 //Apply material to selected bodies
@@ -319,50 +302,68 @@ namespace org.duckdns.buttercup.MaterialSearch
                         case (int)swSelectType_e.swSelSOLIDBODIES:
                         case (int)swSelectType_e.swSelBODYFEATURES:
                             selBody = selMgr.GetSelectedObject6(i, -1) as Body2;
-                            if (!applyMaterialToBody(selBody, material, configInfoList[0]))
+                            //Ensure selction has been made at assembly level
+                            //if necessary
+                            Component bodyComp = selMgr.GetSelectedObjectsComponent4(i, -1);
+                            if (bodyComp != null)
                             {
-                                swApp.SendMsgToUser2(
-                                    "Failed to apply material to body" + selBody.Name,
-                                    (int)swMessageBoxIcon_e.swMbStop,
-                                    (int)swMessageBoxIcon_e.swMbStop);
+                                compDoc = bodyComp.GetModelDoc() as ModelDoc2;
+                                if (compDoc != ti.TargetDoc)
+                                {
+                                    continue;
+                                }
+
+                                try
+                                {
+                                    ModelDocExtension mExt = compDoc.Extension;
+                                    bool check = mExt.SelectByID2(
+                                        selBody.Name,
+                                        "SOLIDBODY",
+                                        0, 0, 0, //X,Y,Z
+                                        false, //append
+                                        -1, //mark
+                                        null, //callout
+                                        (int)swSelectOption_e.swSelectOptionDefault);
+                                }
+                                catch (Exception e)
+                                {
+                                    string m = e.Message;
+                                }
+                            }
+                            List<string> results = applyMaterialToBody(selBody, material, ti);
+                            if (results.Count > 0)
+                            {
+                                foreach (string s in results)
+                                {
+                                    swApp.SendMsgToUser2(
+                                        s,
+                                        (int)swMessageBoxIcon_e.swMbStop,
+                                        (int)swMessageBoxBtn_e.swMbOk);
+                                }
                             }
                             break;
+                        //User selected components in the view area or the feature tree
                         case (int)swSelectType_e.swSelCOMPONENTS:
                             Component2 comp = selMgr.GetSelectedObject6(i, -1) as Component2;
-                            ModelDoc2 compDoc = comp.GetModelDoc2() as ModelDoc2;
-                            if (compDoc == nextModelDoc)
+                            compDoc = comp.GetModelDoc2() as ModelDoc2;
+                            if (compDoc == ti.TargetDoc)
                             {
-                                applyMaterialToPart(compDoc, material, configInfoList[0]);
+                                applyMaterialToPart(material, ti);
                             }
-                            //selBody = selMgr.GetSelectedObject6(i, -1) as Body2;
-                            //mDoc.Extension.SelectByID2(
-                            //    selBody.Name, 
-                            //    "SOLIDBODY", 
-                            //    0, 0, 0, //X,Y,Z
-                            //    true, //append
-                            //    -1, //mark
-                            //    null, //callout
-                            //    (int)swSelectOption_e.swSelectOptionDefault);
-                            //if (!applyMaterialToBody(selBody, material, configInfo))
-                            //{
-                            //    swApp.SendMsgToUser2(
-                            //        "Failed to apply material to component" + comp.Name,
-                            //        (int)swMessageBoxIcon_e.swMbStop,
-                            //        (int)swMessageBoxIcon_e.swMbStop);
-                            //}
                             break;
+                        //User selected 'Material' node in feature tree
                         case (int)swSelectType_e.swSelBROWSERITEM:
                             comp = selMgr.GetSelectedObjectsComponent3(i, -1) as Component2;
                             if (comp == null) //this is a part
                             {
-                                applyMaterialToPart(mDoc, material, configInfoList[0]);
+                                applyMaterialToPart(material, ti);
                             }
                             else
                             {
                                 compDoc = comp.GetModelDoc2() as ModelDoc2;
-                                if (compDoc == nextModelDoc)
+                                if (compDoc == ti.TargetDoc)
                                 {
-                                    applyMaterialToPart(compDoc, material, configInfoList[0]);
+                                    applyMaterialToPart(material, ti);
                                 }
                             }
                             break;
@@ -375,65 +376,32 @@ namespace org.duckdns.buttercup.MaterialSearch
             }
         }
 
-        private bool applyMaterialToPart(ModelDoc2 partModelDoc, MaterialSearchResult material, ConfigInfo configInfo)
+        private bool applyMaterialToPart(MaterialSearchResult material, TargetInfo targetInfo)
         {
-            PartDoc partDoc = partModelDoc as PartDoc;
-            switch (configInfo.AppliesTo)
+            PartDoc partDoc = targetInfo.TargetDoc as PartDoc;
+            foreach (string nextConfig in targetInfo.TargetConfigs)
             {
-                case Target.CURRENT:
-                    Configuration currentConfig = partModelDoc.GetActiveConfiguration();
-                    partDoc.SetMaterialPropertyName2(currentConfig.Name, material.Library, material.MaterialName);
-                    break;
-                case Target.ALL:
-                    object[] configNamesObjArray = partModelDoc.GetConfigurationNames();
-                    foreach (object nextNameObj in configNamesObjArray)
-                    {
-                        string nextConfig = nextNameObj as string;
-                        partDoc.SetMaterialPropertyName2(nextConfig.TrimStart(), material.Library, material.MaterialName);
-                    }
-                    break;
-                case Target.SELECTED:
-                    foreach (string nextConfig in configInfo.SelectedConfigs)
-                    {
-                        partDoc.SetMaterialPropertyName2(nextConfig.TrimStart(), material.Library, material.MaterialName);
-                    }
-                    break;
+                partDoc.SetMaterialPropertyName2(nextConfig, material.Library, material.MaterialName);
             }
             return true;
         }
 
-        private bool applyMaterialToBody(IBody2 body, MaterialSearchResult material, ConfigInfo configInfo)
+        private List<string> applyMaterialToBody(IBody2 body, MaterialSearchResult material, TargetInfo targetInfo)
         {
-            //int result = 0;
-            //switch (configInfo.AppliesTo)
-            //{
-            //    case Target.CURRENT:
-            //        Configuration currentConfig = partModelDoc.GetActiveConfiguration();
-
-            //        result = body.SetMaterialProperty(currentConfig.Name, material.Library, material.MaterialName);
-
-
-
-            //        string dbName = ""; //DEBUG
-            //        string name = body.GetMaterialPropertyName("", out dbName); //DEBUG
-            //        break;
-            //    case Target.ALL:
-            //        object[] configNamesObjArray = partModelDoc.GetConfigurationNames();
-            //        foreach (object nextNameObj in configNamesObjArray)
-            //        {
-            //            string nextConfig = nextNameObj as string;
-            //            result = body.SetMaterialProperty(nextConfig.TrimStart(), material.Library, material.MaterialName);
-            //        }
-            //        break;
-            //    case Target.SELECTED:
-            //        foreach (string nextConfig in configInfo.SelectedConfigs)
-            //        {
-            //            result = body.SetMaterialProperty(nextConfig.TrimStart(), material.Library, material.MaterialName);
-            //        }
-            //        break;
-            //}
-            //return false;
-            return true;
+            List<string> resultStringList = new List<string>();
+            foreach (string nextConfig in targetInfo.TargetConfigs)
+            {
+                int result = body.SetMaterialProperty(nextConfig, material.Library, material.MaterialName);
+                if (result != (int)swBodyMaterialApplicationError_e.swBodyMaterialApplicationError_NoError)
+                {
+                    resultStringList.Add(
+                        "Failed to apply material\n\nBody: " + 
+                        body.Name + "\nConfiguration: " + 
+                        nextConfig + "\nDocument: " + 
+                        targetInfo.TargetDoc.GetTitle());
+                }
+            }
+            return resultStringList;
         }
         /// <summary>
         /// Materials can be applied to bodies or entire parts.  The material can be changed from within the part
@@ -442,26 +410,48 @@ namespace org.duckdns.buttercup.MaterialSearch
         /// be applied
         /// </summary>
         /// <returns>a list of <see cref="ModelDoc2"/> objects</returns>
-        private List<ModelDoc2> getTargetModelDocuments()
+        private Dictionary<ModelDoc2, List<string>> getTargetModelDocumentsAndConfigs()
         {
-            List<ModelDoc2> targetModelDocs = new List<ModelDoc2>();
+            Dictionary<ModelDoc2, List<string>> targetModelDocs = new Dictionary<ModelDoc2, List<string>>();
+            List<string> targetConfigNames = null;
             ModelDoc2 mDoc = swApp.ActiveDoc as ModelDoc2;
             SelectionMgr selMgr = mDoc.SelectionManager;
             swDocumentTypes_e docType = (swDocumentTypes_e)Enum.ToObject(typeof(swDocumentTypes_e), mDoc.GetType());
             switch (docType)
             {
                 case swDocumentTypes_e.swDocPART:
-                    targetModelDocs.Add(mDoc);
+                    Configuration activeConfig = mDoc.GetActiveConfiguration() as Configuration;
+                    targetConfigNames = new List<string>();
+                    targetConfigNames.Add(activeConfig.Name);
+                    targetModelDocs.Add(mDoc, targetConfigNames);
                     break;
                 case swDocumentTypes_e.swDocASSEMBLY:
                     int selCount = selMgr.GetSelectedObjectCount2(-1);
                     for (int i = 1; i <= selCount; i++)
                     {
                         Component2 selComp = selMgr.GetSelectedObjectsComponent4(i, -1) as Component2;
+                        string refConfigName = selComp.ReferencedConfiguration;
                         ModelDoc2 selCompModelDoc = selComp.GetModelDoc2();
-                        if (selComp != null && !targetModelDocs.Contains(selCompModelDoc))
+                        if (selCompModelDoc == null) // Part may be lightweight
                         {
-                            targetModelDocs.Add(selCompModelDoc);
+                            if (selComp.GetSuppression2() ==(int)swComponentSuppressionState_e.swComponentLightweight)
+                            {
+                                selComp.SetSuppression2((int)swComponentSuppressionState_e.swComponentResolved);
+                                selCompModelDoc = selComp.GetModelDoc2();
+                            }
+                        }
+                        if (selComp != null)
+                        { 
+                            if (!targetModelDocs.Keys.Contains(selCompModelDoc))
+                            {
+                                targetConfigNames = new List<string>();
+                                targetConfigNames.Add(refConfigName);
+                                targetModelDocs.Add(selCompModelDoc, targetConfigNames);
+                            }
+                            else if (!targetModelDocs[selCompModelDoc].Equals(refConfigName))
+                            {
+                                targetModelDocs[selCompModelDoc].Add(refConfigName);
+                            }
                         }
                     }
                     break;
@@ -472,7 +462,37 @@ namespace org.duckdns.buttercup.MaterialSearch
             }
             return targetModelDocs;
         }
+
+        /// <summary>
+        /// Determines if the current selections meet the requirements for the 'Config' button
+        /// to be enabled on the material search form.  If one or more bodies are selected the
+        /// button should be disabled, because only the active configuration can have its material
+        /// set via the API.  See SPR 1244737.
+        /// </summary>
+        /// <returns><b>true</b> if the button can be enabled, <b>false</b> otherwise</returns>
+        private bool shouldEnableConfigButton()
+        {
+            ModelDoc2 mDoc = swApp.ActiveDoc as ModelDoc2;
+            if (mDoc.GetType() == (int)swDocumentTypes_e.swDocPART)
+            {
+                return true;
+            }
+            SelectionMgr sMgr = mDoc.SelectionManager;
+            if (sMgr.GetSelectedObjectCount2(-1) == 0)
+            {
+                return true;
+            }
+            int count = sMgr.GetSelectedObjectCount2(-1);
+            for (int i = 1; i <= count; i++)
+            {
+                int selType = sMgr.GetSelectedObjectType3(i, -1);
+                if (selType == (int)swSelectType_e.swSelSOLIDBODIES)
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
         #endregion
     }
-
 }
